@@ -13,9 +13,17 @@ def speak(text):
 def listen():
     with sr.Microphone() as source:
         print("Listening...")
-        recognizer.adjust_for_ambient_noise(source)
+        recognizer.adjust_for_ambient_noise(source, duration=0.5)
 
-        audio = recognizer.listen(source)
+        try:
+            audio = recognizer.listen(
+                source,
+                timeout=5,
+                phrase_time_limit=6
+            )
+        except sr.WaitTimeoutError:
+            print("No speech detected")
+            return ""
 
         try:
             text = recognizer.recognize_google(audio)
@@ -23,11 +31,10 @@ def listen():
             return text.lower()
 
         except sr.UnknownValueError:
-            speak("Sorry, I didn't understand.")
             return ""
 
         except sr.RequestError:
-            speak("Speech service error.")
+            print("API error")
             return ""
 
 def process_command(command):
